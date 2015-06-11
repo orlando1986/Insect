@@ -61,7 +61,8 @@ public class Insect extends Handler {
             case MSG_REAL_RUN:
                 handleRealRun((Task) msg.obj);
                 long nextTime = Util.fetchNextRoundTime();
-                if (nextTime < 0) {
+                if (nextTime == 0) {
+                    LOG.d("see you tomorrow");
                     sendEmptyMessageDelayed(MSG_START, 8 * 60 * 60 * 1000);
                 }// trigger the ad show next day
                 sendEmptyMessageDelayed(MSG_START, nextTime);

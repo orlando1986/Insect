@@ -14,17 +14,17 @@ public class Util {
         long time = System.currentTimeMillis();
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
-        int hour = calendar.get(Calendar.HOUR);
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
         LOG.d("now time is " + hour);
-        if (hour > 0 && hour < 8) {
-            return -1;
+        if (hour > 0 && hour < 7) {
+            return 0;
         }
-        long next = time + generateRandom(5, 60 * 60) * 1000;
-        calendar.setTimeInMillis(next);
-        hour = calendar.get(Calendar.HOUR);
+        long internal = generateRandom(5, 60 * 60) * 1000;
+        calendar.setTimeInMillis(time + internal);
+        hour = calendar.get(Calendar.HOUR_OF_DAY);
         int minute = calendar.get(Calendar.MINUTE);
         LOG.d("next time is " + hour + ":" + minute);
-        return next;
+        return internal;
     }
 
 }
