@@ -7,6 +7,7 @@ import android.os.Message;
 import com.catfish.insect.module.Task;
 import com.catfish.insect.module.YoumiTask;
 import com.catfish.insect.utils.LOG;
+import com.catfish.insect.utils.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,20 +19,22 @@ public class Insect extends Handler {
     private final static int MSG_START = 0;
     private final static int MSG_REAL_RUN = 1;
 
-    private static boolean isRunning = false;
     private static List<Task> sTasks = new ArrayList<Task>();
+    private static Insect sInsect = null;
 
     private Insect() {
     }
 
     public static void go(Context context) {
-        if (!isRunning) {
+        if (sInsect == null) {
             if (context == null) {
                 throw new IllegalArgumentException("context can't be null");
             }
             initAllTasks(context);
-            new Insect().sendEmptyMessage(MSG_START);
-            isRunning = true;
+            sInsect = new Insect();
+        }
+        if (!sInsect.hasMessages(MSG_START) && !sInsect.hasMessages(MSG_REAL_RUN)) {
+            sInsect.sendEmptyMessage(MSG_START);
         }
     }
 
@@ -39,13 +42,14 @@ public class Insect extends Handler {
         sTasks.add(new YoumiTask(context));
     }
 
-    private Task pickOneTask() {
-        // need to check whether a task is running, don't use for now
-        Task task = sTasks.get(0);
-        if (!task.isRunning()) {
-            return task;
+    public static void halt() {
+        LOG.d("Insect stop");
+        if (sInsect == null) {
+            LOG.d("insect has not been init yet, please invoke go() first");
+        } else {
+            sInsect.removeMessages(MSG_START);
+            sInsect.removeMessages(MSG_REAL_RUN);
         }
-        return null;
     }
 
     @Override
@@ -56,9 +60,22 @@ public class Insect extends Handler {
                 break;
             case MSG_REAL_RUN:
                 handleRealRun((Task) msg.obj);
-                sendEmptyMessageDelayed(MSG_START, 20 * 1000);// trigger another ad show
+                long nextTime = Util.fetchNextRoundTime();
+                if (nextTime < 0) {
+                    sendEmptyMessageDelayed(MSG_START, 8 * 60 * 60 * 1000);
+                }// trigger the ad show next day
+                sendEmptyMessageDelayed(MSG_START, nextTime);
                 break;
         }
+    }
+
+    private Task pickOneTask() {
+        // need to check whether a task is running, don't use for now
+        Task task = sTasks.get(Util.generateRandom(0, sTasks.size() - 1));
+        if (!task.isRunning()) {
+            return task;
+        }
+        return null;
     }
 
     private void handleStart() {

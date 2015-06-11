@@ -15,7 +15,7 @@ public class Task extends Handler {
     private static final int MSG_LOAD_RESOURCE = 1;
     private static final int MSG_SHOW_ADS = 2;
     private static final int MSG_EXIT_ADS = 3;
-    private static final int MSG_STOP_DESTROY = 4;
+    private static final int MSG_STOP = 4;
 
     protected Context mContext = null;
     private boolean isRunning = false;
@@ -42,10 +42,10 @@ public class Task extends Handler {
             case MSG_EXIT_ADS:
                 LOG.d("Task exit ad");
                 handleDismiss();
-                sendEmptyMessageDelayed(MSG_STOP_DESTROY, Util.generateRandom(1000, 2000));
+                sendEmptyMessageDelayed(MSG_STOP, Util.generateRandom(1000, 2000));
                 break;
-            case MSG_STOP_DESTROY:
-                LOG.d("Task exit ad");
+            case MSG_STOP:
+                LOG.d("Task destroy ad");
                 handleExit();
                 isRunning = false;
                 break;
